@@ -1,18 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 56" fill="none">
-  <!-- S mark -->
-  <rect width="56" height="56" rx="14" fill="url(#lg)"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 56" fill="none">
   <defs>
-    <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#C9A4D4"/>
-      <stop offset="100%" stop-color="#7B5EA7"/>
+    <radialGradient id="bg" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#2A0D52"/>
+      <stop offset="100%" stop-color="#080010"/>
+    </radialGradient>
+    <linearGradient id="sb" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" stop-color="#D8AAFF"/>
+      <stop offset="100%" stop-color="#7240B0"/>
     </linearGradient>
   </defs>
-  <path
-    d="M37,18 C37,12 33,9 28,9 C23,9 19,13 19,18 C19,23 23,26 28,28 C33,30 37,33 37,38 C37,43 33,47 28,47 C23,47 19,43 19,38"
-    stroke="white"
-    stroke-width="4.5"
-    stroke-linecap="round"
-  />
-  <!-- wordmark "simpli" -->
-  <text x="70" y="36" font-family="Inter,-apple-system,BlinkMacSystemFont,sans-serif" font-size="26" font-weight="700" fill="#2D2424" letter-spacing="-0.5">simpli</text>
+
+  <!-- Icon mark -->
+  <rect width="56" height="56" rx="14" fill="url(#bg)"/>
+  <path d="M37,18 C37,12 33,9 28,9 C23,9 19,13 19,18 C19,23 23,26 28,28 C33,30 37,33 37,38 C37,43 33,47 28,47 C23,47 19,43 19,38"
+    stroke="#3A1265" stroke-width="6" stroke-linecap="round"/>
+  <path d="M37,18 C37,12 33,9 28,9 C23,9 19,13 19,18 C19,23 23,26 28,28 C33,30 37,33 37,38 C37,43 33,47 28,47 C23,47 19,43 19,38"
+    stroke="url(#sb)" stroke-width="5" stroke-linecap="round"/>
+  <path d="M36,18 C34,14 31,10 28,10 C25,10 21,13 20,18"
+    stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+  <g transform="translate(44,13)">
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+    <line x1="-4" y1="0" x2="4" y2="0" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="70" y="36" font-family="Inter,-apple-system,BlinkMacSystemFont,sans-serif"
+    font-size="25" font-weight="700" fill="#2D2424" letter-spacing="-0.4">simpli</text>
 </svg>

@@ -843,3 +843,42 @@ img, svg { display: block; }
 
 .slide-up-enter-active, .slide-up-leave-active { transition: all .22s ease; }
 .slide-up-enter-from, .slide-up-leave-to { transform: translateY(20px); opacity: 0; }
+
+/* ─── Desktop layout ─────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  html, body { background: #F0ECF5; }
+
+  .app-shell {
+    flex-direction: row;
+    max-width: 1200px;
+    height: 100dvh;
+    box-shadow: var(--sh-lg);
+    border-radius: 0;
+    overflow: hidden;
+  }
+
+  .page-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* Route content is centered and capped on desktop */
+  .page {
+    max-width: 720px;
+    width: 100%;
+    margin: 0 auto;
+    padding-bottom: 48px;
+  }
+
+  /* Hide mobile bottom nav on desktop */
+  .bottom-nav { display: none !important; }
+
+  /* Planner gets more horizontal space */
+  .planner-grid { padding-bottom: 24px; }
+  .planner-col  { min-width: 160px; }
+}
+
