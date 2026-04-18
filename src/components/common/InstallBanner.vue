@@ -121,6 +121,8 @@ function handleInstall() {
   height: 44px;
   border-radius: 11px;
   flex-shrink: 0;
+  background: #120820;
+  padding: 6px;
   box-shadow: 0 2px 8px rgba(123,94,167,.3);
 }
 
