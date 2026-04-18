@@ -1,48 +1,52 @@
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
-// Singleton state shared across all usages
-const canInstall  = ref(false)
-const isInstalled = ref(false)
-let deferredPrompt    = null
-let listenersAdded    = false
+const isStandalone = ref(false)
+const canNativeInstall = ref(false)
+const isIOS = ref(false)
+let deferredPrompt = null
+let listenersAdded = false
 
 export function usePWAInstall() {
   onMounted(() => {
-    if (listenersAdded) return
-    listenersAdded = true
-
-    isInstalled.value =
+    // Detect standalone (already installed)
+    isStandalone.value =
       window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator.standalone === true
 
-    if (isInstalled.value) return
+    if (isStandalone.value) return
+
+    // Detect iOS (Safari doesn't fire beforeinstallprompt)
+    isIOS.value = /iPad|iPhone|iPod/.test(navigator.userAgent) && !('MSStream' in window)
+
+    if (listenersAdded) return
+    listenersAdded = true
 
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault()
       deferredPrompt = e
-      canInstall.value = true
+      canNativeInstall.value = true
     })
 
     window.addEventListener('appinstalled', () => {
-      canInstall.value  = false
-      isInstalled.value = true
-      deferredPrompt    = null
+      isStandalone.value     = true
+      canNativeInstall.value = false
+      deferredPrompt         = null
     })
   })
+
+  // Show install UI whenever NOT running in standalone mode
+  // (covers Chrome before prompt fires, iOS, Firefox, etc.)
+  const showInstall = computed(() => !isStandalone.value)
 
   async function install() {
     if (!deferredPrompt) return
     await deferredPrompt.prompt()
     const { outcome } = await deferredPrompt.userChoice
     if (outcome === 'accepted') {
-      canInstall.value = false
-      deferredPrompt   = null
+      canNativeInstall.value = false
+      deferredPrompt         = null
     }
   }
 
-  function dismiss() {
-    canInstall.value = false
-  }
-
-  return { canInstall, isInstalled, install, dismiss }
+  return { showInstall, isStandalone, isIOS, canNativeInstall, install }
 }

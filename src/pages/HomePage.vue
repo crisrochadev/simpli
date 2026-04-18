@@ -16,7 +16,7 @@ const tasksStore  = useTasksStore()
 const billsStore  = useBillsStore()
 
 const { supported, requestPermission, runDailySchedule } = useNotifications()
-const { isInstalled } = usePWAInstall()
+usePWAInstall() // inicializa o singleton para capturar beforeinstallprompt
 
 const showEventModal = ref(false)
 const showTaskModal  = ref(false)
