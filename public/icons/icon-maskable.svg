@@ -1,4 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#B8A4C9"/>
-  <text x="256" y="360" font-family="Georgia,serif" font-size="290" font-weight="700" fill="white" text-anchor="middle">S</text>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C9A4D4"/>
+      <stop offset="100%" stop-color="#7B5EA7"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <path
+    d="M320,178 C320,137 291,104 256,104 C221,104 192,137 192,178 C192,219 221,241 256,256 C291,271 320,295 320,336 C320,377 289,408 256,408 C223,408 192,377 192,336"
+    fill="none"
+    stroke="white"
+    stroke-width="36"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
 </svg>

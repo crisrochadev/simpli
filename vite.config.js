@@ -8,9 +8,9 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/*.svg'],
+      includeAssets: ['icons/*.svg'],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
@@ -27,12 +27,35 @@ export default defineConfig({
         name: 'Simpli',
         short_name: 'Simpli',
         description: 'Seu organizador pessoal simples e elegante',
-        theme_color: '#B8A4C9',
+        theme_color: '#7B5EA7',
         background_color: '#FDFAF8',
         display: 'standalone',
+        display_override: ['window-controls-overlay', 'standalone'],
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        categories: ['productivity', 'lifestyle'],
+        lang: 'pt-BR',
+        shortcuts: [
+          {
+            name: 'Agenda',
+            url: '/agenda',
+            description: 'Ver minha agenda',
+            icons: [{ src: '/icons/icon.svg', sizes: 'any' }]
+          },
+          {
+            name: 'Planner',
+            url: '/planner',
+            description: 'Ver tarefas da semana',
+            icons: [{ src: '/icons/icon.svg', sizes: 'any' }]
+          },
+          {
+            name: 'Contas',
+            url: '/bills',
+            description: 'Ver minhas contas',
+            icons: [{ src: '/icons/icon.svg', sizes: 'any' }]
+          }
+        ],
         icons: [
           {
             src: 'icons/icon.svg',

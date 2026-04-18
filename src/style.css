@@ -46,6 +46,24 @@ html, body {
   color: var(--c-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Native feel: no bounce, no pull-to-refresh */
+  overscroll-behavior: none;
+  /* Prevent callout on long-press */
+  -webkit-touch-callout: none;
+}
+
+/* Remove tap flash on all elements */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Better touch responsiveness on interactive elements */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* iOS momentum scroll on scrollable areas */
+.page, .planner-grid, .week-row {
+  -webkit-overflow-scrolling: touch;
 }
 
 #app { height: 100%; }

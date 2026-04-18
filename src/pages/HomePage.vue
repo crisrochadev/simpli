@@ -4,92 +4,102 @@ import { useEventsStore } from '@/stores/events'
 import { useTasksStore } from '@/stores/tasks'
 import { useBillsStore } from '@/stores/bills'
 import { useNotifications } from '@/composables/useNotifications'
+import { usePWAInstall } from '@/composables/usePWAInstall'
 import CreateEventModal from '@/components/agenda/CreateEventModal.vue'
 import CreateTaskModal from '@/components/planner/CreateTaskModal.vue'
 import CreateBillModal from '@/components/bills/CreateBillModal.vue'
+import InstallBanner from '@/components/common/InstallBanner.vue'
 import { today, formatFullDate, formatCurrency, daysDiff, isPast } from '@/utils/dateUtils'
 
 const eventsStore = useEventsStore()
 const tasksStore  = useTasksStore()
 const billsStore  = useBillsStore()
-const { supported, requestPermission, scheduleDaily } = useNotifications()
+
+const { supported, requestPermission, runDailySchedule } = useNotifications()
+const { isInstalled } = usePWAInstall()
 
 const showEventModal = ref(false)
 const showTaskModal  = ref(false)
 const showBillModal  = ref(false)
-const notifDismissed = ref(localStorage.getItem('notif-dismissed') === '1')
 
-const todayStr      = today()
-const todayLabel    = computed(() => formatFullDate(todayStr))
-const todayEvents   = computed(() => eventsStore.todayEvents)
-const todayTasks    = computed(() => tasksStore.todayTasks)
-const urgentBills   = computed(() => billsStore.urgentBills)
+// Notification permission state (reactive to live updates)
+const notifPermission = ref(supported ? Notification.permission : 'denied')
+const notifDismissed  = ref(localStorage.getItem('simpli-notif-dismissed') === '1')
+
+const todayStr    = today()
+const todayLabel  = computed(() => formatFullDate(todayStr))
+const todayEvents = computed(() => eventsStore.todayEvents)
+const todayTasks  = computed(() => tasksStore.todayTasks)
+const urgentBills = computed(() => billsStore.urgentBills)
+
+const showNotifBanner = computed(() =>
+  supported &&
+  !notifDismissed.value &&
+  notifPermission.value === 'default'
+)
 
 function billStatus(bill) {
   if (bill.paid) return { label: 'pago', cls: 'badge-success' }
   const d = daysDiff(bill.dueDate)
-  if (d < 0) return { label: 'vencida', cls: 'badge-danger' }
+  if (d < 0)  return { label: 'vencida',    cls: 'badge-danger' }
   if (d === 0) return { label: 'vence hoje', cls: 'badge-warning' }
-  return { label: `${d}d`, cls: 'badge-warning' }
+  return              { label: `${d}d`,      cls: 'badge-warning' }
 }
 
 async function enableNotifications() {
-  const ok = await requestPermission()
-  if (ok) {
-    scheduleDaily()
-    notifDismissed.value = true
-    localStorage.setItem('notif-dismissed', '1')
-  }
+  const granted = await requestPermission()
+  notifPermission.value = Notification.permission
+  if (granted) runDailySchedule()
 }
 
 function dismissNotif() {
   notifDismissed.value = true
-  localStorage.setItem('notif-dismissed', '1')
+  localStorage.setItem('simpli-notif-dismissed', '1')
 }
 </script>
 
 <template>
   <main class="page">
 
-    <!-- Header -->
-    <div class="page-header">
-      <h1>Simpli ✦</h1>
-      <p>{{ todayLabel }}</p>
+    <!-- Header with logo -->
+    <div class="page-header home-header">
+      <div class="home-logo">
+        <img src="/icons/logo.svg" alt="Simpli" class="logo-img" />
+      </div>
+      <p class="home-date">{{ todayLabel }}</p>
     </div>
 
-    <!-- Notification banner -->
+    <!-- Install banner (PWA not installed yet) -->
+    <InstallBanner />
+
+    <!-- Notification permission banner -->
     <Transition name="slide-up">
-      <div
-        v-if="supported && !notifDismissed && 'Notification' in window && Notification.permission === 'default'"
-        class="notif-banner"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <div v-if="showNotifBanner" class="notif-banner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
         </svg>
         <span>Ativar lembretes do app?</span>
         <button @click="enableNotifications">Ativar</button>
-        <button @click="dismissNotif" style="background:none;color:var(--c-primary-dark);margin-left:0">✕</button>
+        <button @click="dismissNotif" style="background:none;color:var(--c-primary-dark);margin-left:0;padding:4px 6px">✕</button>
       </div>
     </Transition>
 
     <!-- Today Events -->
     <section class="section">
       <div class="section-header">
-        <span class="section-title">📅 Hoje</span>
-        <button class="btn-add" @click="showEventModal = true">+</button>
+        <span class="section-title">📅 Eventos de hoje</span>
+        <button class="btn-add" @click="showEventModal = true" aria-label="Novo evento">+</button>
       </div>
 
       <TransitionGroup name="slide-up" tag="div">
-        <div
-          v-for="event in todayEvents"
-          :key="event.id"
-          class="event-item"
-        >
+        <div v-for="event in todayEvents" :key="event.id" class="event-item">
           <div class="event-dot" />
           <div class="event-info">
             <div class="event-title">{{ event.title }}</div>
-            <div v-if="event.startTime" class="event-time">{{ event.startTime }}{{ event.endTime ? ' – ' + event.endTime : '' }}</div>
+            <div v-if="event.startTime" class="event-time">
+              {{ event.startTime }}{{ event.endTime ? ' – ' + event.endTime : '' }}
+            </div>
           </div>
           <button class="event-remove" @click="eventsStore.remove(event.id)" aria-label="Remover">×</button>
         </div>
@@ -97,8 +107,10 @@ function dismissNotif() {
 
       <div v-if="!todayEvents.length" class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/>
-          <line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
         </svg>
         Nenhum evento hoje
       </div>
@@ -107,8 +119,8 @@ function dismissNotif() {
     <!-- Today Tasks -->
     <section class="section">
       <div class="section-header">
-        <span class="section-title">✅ Tarefas</span>
-        <button class="btn-add" @click="showTaskModal = true">+</button>
+        <span class="section-title">✅ Tarefas de hoje</span>
+        <button class="btn-add" @click="showTaskModal = true" aria-label="Nova tarefa">+</button>
       </div>
 
       <TransitionGroup name="slide-up" tag="div">
@@ -119,12 +131,7 @@ function dismissNotif() {
           :class="{ done: task.done }"
           style="cursor:default"
         >
-          <button
-            class="task-check"
-            :class="{ checked: task.done }"
-            @click="tasksStore.toggle(task.id)"
-            aria-label="Concluir"
-          >
+          <button class="task-check" :class="{ checked: task.done }" @click="tasksStore.toggle(task.id)" aria-label="Concluir">
             <svg v-if="task.done" viewBox="0 0 12 12" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="2 6 5 9 10 3"/>
             </svg>
@@ -147,7 +154,7 @@ function dismissNotif() {
     <section class="section">
       <div class="section-header">
         <span class="section-title">💰 Contas urgentes</span>
-        <button class="btn-add" @click="showBillModal = true">+</button>
+        <button class="btn-add" @click="showBillModal = true" aria-label="Nova conta">+</button>
       </div>
 
       <TransitionGroup name="slide-up" tag="div">
@@ -156,17 +163,12 @@ function dismissNotif() {
           :key="bill.id"
           class="bill-item"
           :class="{
-            overdue:  !bill.paid && isPast(bill.dueDate),
+            overdue:    !bill.paid && isPast(bill.dueDate),
             'due-soon': !bill.paid && !isPast(bill.dueDate),
             paid: bill.paid
           }"
         >
-          <button
-            class="bill-status"
-            :class="{ 'paid-status': bill.paid }"
-            @click="billsStore.togglePaid(bill.id)"
-            aria-label="Marcar pago"
-          >
+          <button class="bill-status" :class="{ 'paid-status': bill.paid }" @click="billsStore.togglePaid(bill.id)" aria-label="Marcar pago">
             <svg v-if="bill.paid" viewBox="0 0 14 14" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="2 7 6 11 12 3"/>
             </svg>
@@ -184,7 +186,8 @@ function dismissNotif() {
 
       <div v-if="!urgentBills.length" class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <line x1="2" y1="10" x2="22" y2="10"/>
         </svg>
         Nenhuma conta urgente
       </div>
@@ -197,3 +200,26 @@ function dismissNotif() {
 
   </main>
 </template>
+
+<style scoped>
+.home-header {
+  padding-bottom: 16px;
+}
+
+.home-logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 38px;
+  width: auto;
+}
+
+.home-date {
+  font-size: 13px;
+  color: var(--c-text-2);
+  margin-top: 6px;
+  text-transform: capitalize;
+}
+</style>
